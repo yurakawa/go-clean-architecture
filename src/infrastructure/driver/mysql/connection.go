@@ -5,45 +5,42 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/spf13/viper"
 )
 
-var db *gorm.DB
-
-type config struct {
-	Username string
-	Password string
-	Host     string
-	Port     int
-	Database string
-	Options  string
-}
-
+var dbConn *gorm.DB
 
 func Connect() *gorm.DB {
 	var err error
 
-	dbConfig := config {
-		Username: "root",
-		Password: "root",
-		Host: "127.0.0.1",
-		Port: 3306,
-		Database: "hoge",
-		Options: "parseTime=true&loc=Asia%2FTokyo",
-	}
-	db, err = gorm.Open("mysql",
-		fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s", dbConfig.Username, dbConfig.Password, dbConfig.Host, dbConfig.Port, dbConfig.Database, dbConfig.Options))
+	dbHost := viper.GetString(`database.host`)
+	dbPort := viper.GetInt(`database.port`)
+	dbUser := viper.GetString(`database.user`)
+	dbPass := viper.GetString(`database.pass`)
+	dbName := viper.GetString(`database.name`)
+	Options := "parseTime=true&loc=Asia%2FTokyo"
+
+	dbConn, err = gorm.Open("mysql",
+		fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s",
+			dbUser,
+			dbPass,
+			dbHost,
+			dbPort,
+			dbName,
+			Options,
+		))
 
 	if err != nil {
 		panic(err)
 	}
-	if !db.HasTable(&gateway.User{}) {
-		if err := db.Table("users").CreateTable(&gateway.User{}).Error; err != nil {
+	if !dbConn.HasTable(&gateway.User{}) {
+		if err := dbConn.Table("users").CreateTable(&gateway.User{}).Error; err != nil {
 			panic(err)
 		}
 	}
-	return db
+	return dbConn
 }
 
 func CloseConn() {
-	db.Close()
+	dbConn.Close()
 }

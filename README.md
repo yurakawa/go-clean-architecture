@@ -4,8 +4,15 @@
 - gorm
 
 ### db
+
 ```
-docker container run -d --rm --name some-mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=hoge -p 3306:3306 mysql:5.7
+docker container run -d --rm --name article \
+    -e MYSQL_ROOT_PASSWORD=root \
+    -e MYSQL_USER=user \
+    -e MYSQL_PASSWORD=password \
+    -e MYSQL_DATABASE=article \
+    -p 3306:3306 mysql:5.7
+    
 ```
 
 

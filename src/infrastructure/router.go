@@ -3,20 +3,19 @@ package infrastructure
 import (
 	"cleanarchitecture/adapter/controller"
 	"cleanarchitecture/adapter/interfaces"
-	"cleanarchitecture/infrastructure/driver/mysql"
+	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo"
+	"github.com/spf13/viper"
 )
 
 type CustomContext struct {
 	echo.Context
 }
 
-func Router() {
+func Router(dbConn *gorm.DB) {
 	e := echo.New()
 
 	logger := &Logger{}
-
-	conn := mysql.Connect()
 
 	e.Use( func(h echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -32,12 +31,12 @@ func Router() {
 		})
 	}
 
-	userController := controller.NewUserController(conn, logger)
+	userController := controller.NewUserController(dbConn, logger)
 
 
 	POST("/users", userController.Create)
 
-	err := e.Start(":8000")
+	err := e.Start(viper.GetString(`server.address`))
 	if err != nil {
 		panic(err)
 	}
